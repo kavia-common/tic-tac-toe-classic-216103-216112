@@ -4,16 +4,27 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'REACT_APP_');
 
+  // Prefer REACT_APP_PORT if provided, else default to 3000
+  const resolvedPort = Number(env.REACT_APP_PORT) || 3000;
+
   return {
     plugins: [react()],
+
+    // Dev server configuration
     server: {
-      port: 3000,
-      host: '0.0.0.0'
+      // true binds to all network interfaces (equivalent to --host 0.0.0.0)
+      host: true,
+      port: resolvedPort,
+      https: false,
     },
+
+    // Preview server configuration mirrors dev
     preview: {
-      port: 3000,
-      host: '0.0.0.0'
+      host: true,
+      port: resolvedPort,
+      https: false,
     },
+
     define: {
       // Expose only REACT_APP_* vars as import.meta.env.REACT_APP_*
       'import.meta.env.REACT_APP_API_BASE': JSON.stringify(env.REACT_APP_API_BASE || ''),
@@ -28,8 +39,10 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.REACT_APP_LOG_LEVEL': JSON.stringify(env.REACT_APP_LOG_LEVEL || ''),
       'import.meta.env.REACT_APP_HEALTHCHECK_PATH': JSON.stringify(env.REACT_APP_HEALTHCHECK_PATH || ''),
       'import.meta.env.REACT_APP_FEATURE_FLAGS': JSON.stringify(env.REACT_APP_FEATURE_FLAGS || ''),
-      'import.meta.env.REACT_APP_EXPERIMENTS_ENABLED': JSON.stringify(env.REACT_APP_EXPERIMENTS_ENABLED || '')
+      'import.meta.env.REACT_APP_EXPERIMENTS_ENABLED': JSON.stringify(env.REACT_APP_EXPERIMENTS_ENABLED || ''),
     },
-    envPrefix: 'REACT_APP_'
+
+    // Ensure only REACT_APP_ prefixed env vars are loaded
+    envPrefix: 'REACT_APP_',
   };
 });
